@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>Hi!</title>
+  </head>
+  <body>
+    <div id='content'>
+      <p>Hi there! This is some text.</p>
+    </div>
+    <div id='tags'>
+      <b>Tags</b>
+    </div>
+    <script>
+"use strict";
+var tagCount = 0;
+var tagList = document.createElement('ul');
+var content = document.getElementById('content');
+document.getElementById('tags').appendChild(tagList);
+content.addEventListener('contextmenu', onContentClick, false);
+
+function onContentClick (event) {
+  var selection = document.getSelection();
+  // proceed only if we have a simple selection within a single node
+  if (selection.isCollapsed) return;
+  if (selection.anchorNode !== selection.focusNode) return;
+  if (selection.rangeCount !== 1) return;
+  event.preventDefault();
+  createTagFromSelection(selection);
+}
+function createTagFromSelection (selection) {
+  var selectedText = selection.toString();
+  var {anchorNode, anchorOffset, focusOffset} = selection;
+  var parentElement = anchorNode.parentElement;
+  var {textContent} = anchorNode;
+  var textBefore = textContent.substr(0, Math.min(anchorOffset, focusOffset));
+  var textAfter = textContent.substr(Math.max(anchorOffset, focusOffset), anchorNode.textContent.length - 1);
+  parentElement.innerText = textBefore;
+  var newSpan = document.createElement('span');
+  var tagNumber = ++tagCount;
+  newSpan.classList.add('tag-' + tagNumber);
+  newSpan.innerText = selectedText;
+  parentElement.appendChild(newSpan);
+  parentElement.appendChild(document.createTextNode(textAfter));
+
+  var newLi = document.createElement('li');
+  newLi.innerText = 'new tag';
+  newLi.setAttribute('data-tagnumber', tagNumber);
+  tagList.appendChild(newLi);
+  newLi.addEventListener('mouseenter', onTagEnter, false);
+  newLi.addEventListener('mouseleave', onTagLeave, false);
+}
+function onTagEnter (event) {
+  var li = event.target;
+  if (li.tagName !== 'LI') return;
+  var tagNumber = li.dataset.tagnumber;
+  var span = document.getElementsByClassName('tag-' + tagNumber)[0];
+  span.style.backgroundColor = '#DDFFDD';
+}
+function onTagLeave (event) {
+  var li = event.target;
+  if (li.tagName !== 'LI') return;
+  var tagNumber = li.dataset.tagnumber;
+  var span = document.getElementsByClassName('tag-' + tagNumber)[0];
+  span.removeAttribute('style');
+}
+    </script>
+  </body>
+</html>
